@@ -37,3 +37,5 @@ client_admin/test.mp4
 .pytest_cache
 debug.log
 migrations/
+test_suite_analysis/
+managed_context/
