@@ -31,7 +31,7 @@ pip-selfcheck.json
 dump.rdb
 pyvenv.cfg
 .env
-
+venv/
 ngrok
 client_admin/test.mp4
 .pytest_cache
