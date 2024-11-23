@@ -17,7 +17,7 @@ services:
       - .:/app
       - ./static:/app/static
     ports:
-      - "8000:8000"  # Map Gunicorn's internal port to a host port for debugging
+      - "8000:8000"  
     networks:
       - backend
 
@@ -27,7 +27,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./static:/app/static
     ports:
-      - "80:80"  # Map Nginx's port 80 to the host
+      - "80:80"  
     depends_on:
       - gutenburg-web
     networks:
