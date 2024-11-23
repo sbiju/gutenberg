@@ -23,24 +23,38 @@ class BooksBookViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = CustomPagination
 
     def list(self, request, *args, **kwargs):
-        search_query = request.query_params.get('search', '')
+        gutenberg_id = request.query_params.get('id', None)
+        language = request.query_params.get('language', None)
+        mime_type = request.query_params.get('mime_type', None)
+        topic = request.query_params.get('topic', None)
+        author = request.query_params.get('author', None)
+        title = request.query_params.get('title', None)
+
         query = Q()
 
-        if search_query:
-            # Searching across multiple fields using Q objects
-            query &= Q(title__icontains=search_query) | \
-                     Q(booksbookauthors__author__name__icontains=search_query) | \
-                     Q(booksbooklanguages__language__code__icontains=search_query) | \
-                     Q(booksbooksubjects__subject__name__icontains=search_query) | \
-                     Q(booksbookbookshelves__bookshelf__name__icontains=search_query)
+        if gutenberg_id:
+            query &= Q(gutenberg_id=gutenberg_id)
 
-        # Filter the queryset based on the query
-        queryset = self.get_queryset().filter(query)
+        if language:
+            query &= Q(booksbooklanguages__language__code__iexact=language)
 
-        # Get the total count of matching books
+        if mime_type:
+            query &= Q(booksformat__mime_type__iexact=mime_type)
+
+        if topic:
+            query &= Q(booksbooksubjects__subject__name__icontains=topic) | \
+                    Q(booksbookbookshelves__bookshelf__name__icontains=topic)
+
+        if author:
+            query &= Q(booksbookauthors__author__name__icontains=author)
+
+        if title:
+            query &= Q(title__icontains=title)
+
+        queryset = self.get_queryset().filter(query).order_by('-download_count').distinct()
+
         total_count = queryset.count()
 
-        # Paginate the queryset
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -49,7 +63,6 @@ class BooksBookViewSet(viewsets.ReadOnlyModelViewSet):
                 'results': serializer.data
             })
 
-        # If no pagination, return all data (in case pagination is not needed)
         serializer = self.get_serializer(queryset, many=True)
         return Response({
             'count': total_count,
